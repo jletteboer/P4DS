@@ -6,6 +6,9 @@ import os                               # For getting filesize
 from tqdm.notebook import tnrange       # For showing progressbar
 import IP2Location                      # IP Geolocation Python Library for getting location
 import pandas as pd                     # Import pandas for dataframes and series
+import matplotlib.pyplot as plt         # For making plots
+import matplotlib.patches as mpatches   # Customizing legends
+import seaborn as sns                   # Seaborn visualization package
 
 ## Disable warnings about certificates
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -16,6 +19,50 @@ CEND = '\33[0m'
 RED = '\033[1;91;1m'
 BOLD = '\033[1m'
 
+
+def data_groupby(df, by, top=15):
+    '''This function returns a groupedby dataframe
+    '''
+    ## Create new dataset based on given inputs, sort values and return given top
+    data = pd.DataFrame(df.groupby(by).size().sort_values(ascending=False)[:top], columns=['count'])
+    
+    return data
+
+
+def country_dropdown(df, Country, Top):
+    '''This function wil be used for widget interaction of chosen country and returns two barplots.
+    '''
+    fig, axs = plt.subplots(ncols=2, figsize=(15,10))
+    static_color = '#38a3d8'
+    edge_color = 'black'
+    selected_color = 'orange'
+    legend_labels = mpatches.Patch(facecolor=selected_color, label='Selected Country', edgecolor=edge_color)
+    
+    ## Create dataframe with top countries
+    data_country = data_groupby(df=df, by='country_short', top=Top)
+    
+    if Country == '# All':
+        data = data_groupby(df=df, by='city', top=Top)
+        clrs = [static_color for x in data_country['count']]
+        sns.barplot(data=data, x='count', y=data.index, color=static_color, edgecolor=edge_color, 
+                    ax=axs[0]).set(title=f'Hits by top {Top} cities', xscale='log')
+
+    else:
+        data = data_groupby(df=df[df['country_short'] == Country], by='city', top=Top)
+        clrs = [selected_color if (x == data_country.loc[Country][0]) else static_color for x in data_country['count'] ]
+        sns.barplot(data=data, x='count', y=data.index, color=static_color, edgecolor=edge_color, 
+                    ax=axs[0]).set(title=f'Hits from top {Top} cities of {Country}', xscale='log')
+     
+    ## Plot always countries
+    sns.barplot(data = data_country, x='count', y=data_country.index, 
+                palette=clrs, edgecolor=edge_color, ax=axs[1])\
+                .set(title=f'Hits from top {Top} countries', xscale='log');
+    
+    axs[1].legend(handles=[legend_labels]) 
+    
+    ## Function will return fig automatticly, if I return fig too two figure will be created twice
+
+    
 def yes_or_no(question, default_no=True):
     """Ask a yes/no question via input() and return False or True.
     
@@ -147,9 +194,11 @@ def get_location(ip):
     ## Cache the database into memory to accelerate lookup speed.
     ## WARNING: Please make sure your system have sufficient RAM to use this feature.
     database = IP2Location.IP2Location(os.path.join("..", "data", "IP2LOCATION-LITE-DB5", "IP2LOCATION-LITE-DB5.BIN"))
-    result = database.get_all(ip)
-    ## Get all information of IP Address
     
+    ## Get all information of IP Address
+    result = database.get_all(ip)
+    
+    ## Define names for panda Series
     names = {'clientip': result.ip,
              'country_short': result.country_short,
              'country_long': result.country_long,
@@ -159,6 +208,7 @@ def get_location(ip):
              'longitude': result.longitude}
     
     locations = pd.Series(data=names)
+    
     return locations
 
 
@@ -166,7 +216,7 @@ def http_status_class(series: str):
     '''Convert HTTP status code to HTTP Class
     
     Args:
-        series : string : 
+        series : string : Series data
 
     Returns:
         Returns the class of a HTTP status code.
@@ -185,3 +235,66 @@ def http_status_class(series: str):
     if series.startswith('5'):
         return "Server errors"
 
+
+def pltMovingAverage(timeseries, window, plotBounds=False, plotOutlier=False):
+    """Function for plotting timeseries dataframe, with lower, upper bounds and outliers
+    
+    Args:
+        timeseries  : dataframe : Dataframe with timeseries
+        window      : int       : Rolling window size
+        plotBounds  : bool      : Show confidence intervals
+        plotOutlier : bool      : Show anomalies
+        
+    Returns:
+        Lineplot with confidence interfals and outliers
+    
+    Example:
+        pltMovingAverage(ts, 7, plotBounds=True, plotOutlier=True)
+    """
+    
+    ## Create rolling mean based on input
+    rolling_mean = timeseries.rolling(window=window).mean()
+    
+    ## Setting figure size
+    plt.figure(figsize=(20, 8))
+    
+    ## Setting title
+    plt.title(f'Moving average with a window size of {window}')
+    
+    ## Plot rolling mean and actual values
+    plt.plot(rolling_mean, "g--", label="Rolling mean")
+    plt.plot(timeseries[window:], label="Actual values", color=static_color)
+    
+    ## If plotBounds is True
+    if plotBounds:
+        ## Mean absolute deviation (MAD) measures 
+        ts_mad = timeseries.mad().item()
+        
+        ## Create lower and upper bounds
+        lower_bound = rolling_mean - ts_mad
+        upper_bound = rolling_mean + ts_mad
+        
+        ## Plot lower and upper bounds
+        plt.plot(upper_bound, "m:", markersize=1.5, label="Lower bound / Upper bound")
+        plt.plot(lower_bound, "m:", markersize=1.5)
+        
+        ## If plotOutlier is True, plot outliers
+        if plotOutlier:
+            ## Create new dataframe, based on input
+            outliers = pd.DataFrame(index=timeseries.index, columns=timeseries.columns)
+            
+            ## Create outlier column
+            outliers[timeseries < lower_bound] = timeseries[timeseries < lower_bound]
+            outliers[timeseries > upper_bound] = timeseries[timeseries > upper_bound] 
+
+            ## Number of total outliers
+            n_outliers = outliers.count()[0]
+        
+            ## Plot outliers
+            plt.plot(outliers, "ro", markersize=5)
+            plt.title(f'Moving average with a window size of {window}\n Number of outliers is {n_outliers}')
+    
+    ## Plot legend
+    plt.legend()
+    
+    
