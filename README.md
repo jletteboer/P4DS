@@ -7,12 +7,12 @@ There is a environment.yml created of the Anaconda Python environment. This can 
 conda env export > environment.yml
 ```
 
-Cloning github repository.
+Cloning GitHub repository.
 ```bash
 git clone https://github.com/jletteboer/P4DS.git
 ```
 
-Go to directory.
+Go to cloned GitHub directory.
 ```bash
 cd PD4S
 ```
@@ -23,13 +23,12 @@ conda env create --name p4ds-student --file environment.yml
 ```
 
 Activate new environment fore using it.
-
-**Windows:**
+**For Windows:**
 ```bash
 activate p4ds-student
 ```
 
-**MacOS:**
+**For MacOS:**
 ```bash
 source activate p4ds-student
 ```
