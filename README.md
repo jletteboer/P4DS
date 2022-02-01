@@ -38,4 +38,25 @@ source activate p4ds-student
 jupyter notebook
 ```
 
-There are is one directory and files, Project directory contains the 
+The directory tree of the project looks:
+
+P4DS/
+├── Project
+│   ├── data
+│   │   ├── IP2LOCATION-LITE-DB5
+│   │   │   ├── IP2LOCATION-LITE-DB5.BIN
+│   │   │   ├── LICENSE_LITE.TXT
+│   │   │   └── README_LITE.TXT
+│   │   ├── p4ds_weblog_alm.csv.zip
+│   │   └── p4ds_weblog_small.csv.zip
+│   └── notebooks
+│       ├── Project P4DS.ipynb
+│       ├── functions.py
+│       └── media
+│           ├── CRISP-DM_Process_Diagram.png
+│           ├── downloadData.mp4
+│           └── iqr.png
+├── README.md
+└── environment.yml
+
+5 directories, 12 files
