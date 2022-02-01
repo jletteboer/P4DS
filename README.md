@@ -39,7 +39,7 @@ jupyter notebook
 ```
 
 The directory tree of the project looks:
-
+```bash
 P4DS/
 ├── Project
 │   ├── data
@@ -60,3 +60,4 @@ P4DS/
 └── environment.yml
 
 5 directories, 12 files
+```
