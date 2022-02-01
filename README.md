@@ -10,5 +10,24 @@ $ conda list -e > requirements.txt
 
 Create an environment using the requirements.txt file.
 ```bash
-$ conda create --name p4ds --file requirements.txt
+$ conda create --name p4ds-student --file requirements.txt
 ```
+
+Activate new environment fore using it.
+
+**Windows:**
+```bash
+activate p4ds-student
+```
+
+**MacOS:**
+```bash
+source activate p4ds-student
+```
+
+Cloning github repository.
+
+```bash
+git clone https://github.com/jletteboer/P4DS.git
+```
+
