@@ -196,3 +196,4 @@ dependencies:
     - tabulate==0.8.9
     - tangled-up-in-unicode==0.1.0
     - visions==0.7.4
+prefix: /Users/jletteboer/opt/anaconda3/envs/p4ds
